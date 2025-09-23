@@ -58,8 +58,7 @@
  * You might find it useful to add your own #defines to improve readability here
  */
 
-int main(void)
-{
+int main(void) {
 
     AD1PCFG = 0xFFFF; /* keep this line as it sets I/O pins that can also be analog to be digital */
 
@@ -69,47 +68,51 @@ int main(void)
      * projects, you might consider having one or more initialize() functions
      */
 
-    typedef enum
-    {
-        STATE_OFF,
-        STATE_GO,
-        STATE_PAUSE
-    } state_t;
-
-    state_t state = STATE_OFF;
-
+    // Setup
     TRISBbits.TRISB9 = 0;
+    TRISBbits.TRISB7 = 1;
+    TRISBbits.TRISB4 = 1;
+    TRISAbits.TRISA4 = 1;
+    CNPU2bits.CN23PUE = 1;
+    CNPU1bits.CN1PUE = 1;
+    CNPU1bits.CN0PUE = 1;
 
-    while (1)
-    {
-        switch (state)
-        {
-        case STATE_OFF:
-            while (state == STATE_OFF)
-            {
-                LATBbits.LATB9 = 0;
-            }
-            break;
-        case STATE_GO:
-            while (state == STATE_GO)
-            {
-                LATBbits.LATB9 = 1;
-            }
-            break;
-        case STATE_PAUSE:
-            break;
-        default:
-            break;
+    while (1) {
+        if((PORTBbits.RB7 == 0 && PORTBbits.RB4 == 0) || (PORTBbits.RB4 == 0 && PORTAbits.RA4 == 0) || (PORTBbits.RB7 == 0 && PORTAbits.RA4 == 0)) {
+            LATBbits.LATB9 = 1;
+        }
+        else if (PORTBbits.RB7 == 0) {
+            LATBbits.LATB9 = 1;
+            wait(1088);
+            LATBbits.LATB9 = 0;
+            wait(1088);
+        }
+        else if (PORTBbits.RB4 == 0) {
+            LATBbits.LATB9 = 1;
+            wait(4350);
+            LATBbits.LATB9 = 0;
+            wait(4350);
+        }
+        else if (PORTAbits.RA4 == 0) {
+            LATBbits.LATB9 = 1;
+            wait(26100);
+            LATBbits.LATB9 = 0;
+            wait(26100);
+        }
+        else {
+            continue;
         }
     }
-
     return 0;
 }
 
-void wait(int ticks)
-{
-    for (int i = 0; i < ticks; i++)
-    {
-        printf("waiting...\n");
+// one instruction takes 0.25 microseconds
+void wait(unsigned int ticks) {
+    for (unsigned int i = 0; i < ticks; i++) {
+        // 100 microseconds * 2(outer for loop instructions) = 200 microseconds -> (200 microseconds * ticks) / 0.87 = total time
+        for (unsigned int j = 0; j < 100; j++) {
+            // 100 * 4(inner for loop instructions) = 400 -> 400 * 0.25 microseconds = 100 microseconds
+            Nop();
+        }
     }
 }

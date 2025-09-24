@@ -68,39 +68,36 @@ int main(void)
      * you might be fine just having it here. For more complex
      * projects, you might consider having one or more initialize() functions
      */
-
-    typedef enum
-    {
-        STATE_OFF,
-        STATE_GO,
-        STATE_PAUSE
-    } state_t;
-
-    state_t state = STATE_OFF;
-
+    
     TRISBbits.TRISB9 = 0;
+    TRISBbits.TRISB7 = 1;
+    TRISBbits.TRISB4 = 1;
+    TRISAbits.TRISA4 = 1;
+    CNPU2bits.CN23PUE = 1;
+    CNPU1bits.CN1PUE = 1;
+    CNPU1bits.CN0PUE = 1;
 
     while (1)
     {
-        switch (state)
+        if (PORTBbits.RB7 == 0)
         {
-        case STATE_OFF:
-            while (state == STATE_OFF)
-            {
-                LATBbits.LATB9 = 0;
-            }
-            break;
-        case STATE_GO:
-            while (state == STATE_GO)
-            {
-                LATBbits.LATB9 = 1;
-            }
-            break;
-        case STATE_PAUSE:
-            break;
-        default:
-            break;
+            wait(250);
+            LATBbits.LATB9 = 1;
+            wait(250);
         }
+        else if (PORTBbits.RB4 == 0)
+        {
+            wait(1000);
+            LATBbits.LATB9 = 1;
+            wait(1000);
+        }
+        else if (PORTAbits.RA4 == 0)
+        {
+            wait(4200);
+            LATBbits.LATB9 = 1;
+            wait(4200);
+        }
+        LATBbits.LATB9 = 0;
     }
 
     return 0;
@@ -110,6 +107,9 @@ void wait(int ticks)
 {
     for (int i = 0; i < ticks; i++)
     {
-        printf("waiting...\n");
+        for (int i = 0; i < 600; i++)
+        {
+            Nop();
+        }
     }
 }
